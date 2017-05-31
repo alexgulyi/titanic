@@ -1,6 +1,8 @@
 import numpy
+import matplotlib.pyplot as plt
 from pandas import read_csv
 from re import search, match
+from scipy import stats
 
 def LoadData(path):
 	"""Loads a file into dataframe"""
@@ -39,11 +41,18 @@ def MapFamilies(names):
 
 	return(familyDict)
 
+def FillAges(ages):
+	"""Replaces NaN values with appropriate (mode)"""
+	filledAges = dataFrame.loc[~numpy.isnan(dataFrame.loc[:,"Age"])].loc[:,"Age"]
+	mode = stats.mode(filledAges)[0][0]
+	ages[numpy.isnan(ages)] = mode
+	return(ages)
+
 
 if __name__ == '__main__':
 	dataFrame = LoadData('train.csv')
 
 	names = dataFrame.loc[:,"Name"]
-	# columns to rebuild dataframe
 	titles = GrabAttribute('title', names)
-	familiesSize = MapFamilies(names)
+
+	newAges = FillAges(dataFrame.loc[:,"Age"])
