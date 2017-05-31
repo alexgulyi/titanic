@@ -1,6 +1,6 @@
 import numpy
 import matplotlib.pyplot as plt
-from pandas import read_csv
+from pandas import read_csv, Series
 from re import search, match
 from scipy import stats
 
@@ -35,10 +35,8 @@ def MapFamilies(names):
 	familyDict = {}
 	families = numpy.array(GrabAttribute('surname', names))
 	familyUnique = set(families)
-
 	for f in familyUnique:
 		familyDict[f] = len(numpy.where(families == f)[0])
-
 	return(familyDict)
 
 def FillAges(ages):
@@ -51,8 +49,10 @@ def FillAges(ages):
 
 if __name__ == '__main__':
 	dataFrame = LoadData('train.csv')
-
-	names = dataFrame.loc[:,"Name"]
-	titles = GrabAttribute('title', names)
-
+	titles = GrabAttribute('title', dataFrame.loc[:,"Name"])
 	newAges = FillAges(dataFrame.loc[:,"Age"])
+
+	dataFrame["Age"] = Series(newAges)
+	dataFrame["Titles"] = Series(titles)
+
+	print(dataFrame.head())
