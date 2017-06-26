@@ -32,18 +32,20 @@ def grabAttribute(attr, names):
 			continue
 	return(result)
 
-def fillAges(ages):
+def fillField(col, opt):
 	"""Replaces NaN values with appropriate (mode)"""
-	filledAges = ages[~numpy.isnan(ages)]
-	mode = stats.mode(filledAges)[0][0]
-	ages[numpy.isnan(ages)] = mode
-	return(ages)
+	filledFields = col[~numpy.isnan(col)]
+	if opt == 'mode':
+		replace = stats.mode(filledFields)[0][0]
+	else:
+		replace = numpy.mean(col)
+	col[numpy.isnan(col)] = replace
+	return(col)
 
 def prepareDataSet(path):
 	dataFrame = loadData(path)
 	titles = grabAttribute('title', dataFrame.loc[:,"Name"])
 	
-	# titles encoding - decision trees don't support string features
 	# + it's possible to transform titles into integer rank:
 	# 1 - no titles, 2 - job-related titles, 3 - nobility titles
 	titlesEncoding = {'Col' : 2,
@@ -62,19 +64,24 @@ def prepareDataSet(path):
 						'Major' : 2,
 						'Jonkheer' : 3,
 						'Mr' : 1,
-						'Mrs' : 1}
+						'Mrs' : 1,
+						'Dona' : 3,}
 	ranks = [titlesEncoding[t] for t in titles]
 
-	newAges = fillAges(dataFrame.loc[:,"Age"])
+	#newAges = fillAges(dataFrame.loc[:,"Age"])
+	newAges = fillField(dataFrame.loc[:,"Age"], opt = "mode")
 	dataFrame["Age"] = Series(newAges)
 	dataFrame["Rank"] = Series(ranks)
+
+	newFares = fillField(dataFrame.loc[:,"Age"], opt = "mean")
+	dataFrame["Fare"] = Series(newFares)
 	
 	# dropping columns that don't have enough info
 	dataFrame.drop(["PassengerId", "Name", "Sex", "Ticket", "Cabin", "Embarked"], inplace = True, axis = 1)
 	
 	# reducing distinct values for some parameters
-	dataFrame.loc[:,"Fare"].astype(int)
-	dataFrame.loc[:,"Age"].astype(int)
+	dataFrame.loc[:,"Fare"] = dataFrame.loc[:,"Fare"].astype(int)
+	dataFrame.loc[:,"Age"] = dataFrame.loc[:,"Age"].astype(int)
 	return(dataFrame)
 
 def createTree(dataframe, features, target):
@@ -84,7 +91,7 @@ def createTree(dataframe, features, target):
 		X.append(list(row[1]))
 	Y = list(dataframe.loc[:,target])
 
-	clf = tree.DecisionTreeClassifier()
+	clf = tree.DecisionTreeClassifier(splitter = 'random')
 	X = dataframe.loc[:,features]
 	Y = list(dataframe.loc[:,target])
 	clf.fit(X, Y)
@@ -95,8 +102,12 @@ def drawTree(classifier, featureNames):
 	system('dot -Tpng tree.dot -o tree.png')
 
 if __name__ == '__main__':
-	df = prepareDataSet("train.csv")
-	print(df.head())
+	dfTrain = prepareDataSet("train.csv")
+	print(dfTrain.head())
 	features = ["Pclass", "Age", "SibSp", "Parch", "Fare", "Rank"]
-	clfTree = createTree(df, features, "Survived")
+	clfTree = createTree(dfTrain, features, "Survived")
 	drawTree(clfTree, features)
+	
+	dfTest = prepareDataSet("test.csv")
+	test = clfTree.predict(dfTest)
+	print(clfTree.predict(dfTest))
