@@ -1,6 +1,6 @@
 import numpy
 import matplotlib.pyplot as plt
-from pandas import read_csv, Series
+from pandas import read_csv, Series, DataFrame, isnull
 from re import search, match
 from scipy import stats
 from os import system
@@ -32,19 +32,25 @@ def grabAttribute(attr, names):
 			continue
 	return(result)
 
-def fillField(col, opt):
+def fillField(col, opt = 'mode'):
 	"""Replaces NaN values with appropriate (mode)"""
-	filledFields = col[~numpy.isnan(col)]
-	if opt == 'mode':
-		replace = stats.mode(filledFields)[0][0]
-	else:
-		replace = numpy.mean(col)
-	col[numpy.isnan(col)] = replace
+	if not col[isnull(col)].empty:
+		filledFields = col[~isnull(col)]
+		if opt == 'mode':
+			replace = stats.mode(filledFields)[0][0]
+		else:
+			replace = numpy.mean(col)
+		col[isnull(col)] = replace
 	return(col)
+
+def parseColumn(col, encod = {}, fillMode = "mode"):
+	newCol = fillField(col, opt = fillMode)
+	if encod:
+		newCol = [encod[key] for key in newCol]
+	return(newCol)
 
 def prepareDataSet(path):
 	dataFrame = loadData(path)
-	titles = grabAttribute('title', dataFrame.loc[:,"Name"])
 	
 	# + it's possible to transform titles into integer rank:
 	# 1 - no titles, 2 - job-related titles, 3 - nobility titles
@@ -66,32 +72,37 @@ def prepareDataSet(path):
 						'Mr' : 1,
 						'Mrs' : 1,
 						'Dona' : 3,}
-	ranks = [titlesEncoding[t] for t in titles]
-
-	#newAges = fillAges(dataFrame.loc[:,"Age"])
-	newAges = fillField(dataFrame.loc[:,"Age"], opt = "mode")
-	dataFrame["Age"] = Series(newAges)
-	dataFrame["Rank"] = Series(ranks)
-
-	newFares = fillField(dataFrame.loc[:,"Age"], opt = "mean")
-	dataFrame["Fare"] = Series(newFares)
+	sexEncoding = {'female' : 0, 'male' : 1}
+	citiesEncoding = {'Q' : 0, 'C' : 1, 'S' : 2}
 	
-	# dropping columns that don't have enough info
-	dataFrame.drop(["PassengerId", "Name", "Sex", "Ticket", "Cabin", "Embarked"], inplace = True, axis = 1)
+	titles = Series(grabAttribute('title', dataFrame.loc[:,"Name"]))
+	dataFrame["Rank"] = parseColumn(titles, titlesEncoding)
+	dataFrame["Sex"] = parseColumn(dataFrame["Sex"], sexEncoding)
+	dataFrame["Embarked"] = parseColumn(dataFrame["Embarked"], citiesEncoding)
+	dataFrame["Age"] = parseColumn(dataFrame["Age"])
+	dataFrame["Fare"] = parseColumn(dataFrame["Fare"],  fillMode = "mean")
 	
-	# reducing distinct values for some parameters
+	# dropping irrelevant columns
+	dataFrame.drop(["Name", "Ticket", "Cabin"], inplace = True, axis = 1)
+	
+	# reducing # of distinct values for some parameters
 	dataFrame.loc[:,"Fare"] = dataFrame.loc[:,"Fare"].astype(int)
 	dataFrame.loc[:,"Age"] = dataFrame.loc[:,"Age"].astype(int)
 	return(dataFrame)
 
-def createTree(dataframe, features, target):
+def Sample(dataframe, size):
+	"""Splits dataframe randomly on 2 pieces with one sized <size>"""
+	return()
+
+
+def createTree(dataframe, features, target, tune):
 	X = []
 	iterFeatures = dataframe.loc[:,features].iterrows()
 	for row in iterFeatures:
 		X.append(list(row[1]))
 	Y = list(dataframe.loc[:,target])
 
-	clf = tree.DecisionTreeClassifier(splitter = 'random')
+	clf = tree.DecisionTreeClassifier(splitter = 'best', **tune)
 	X = dataframe.loc[:,features]
 	Y = list(dataframe.loc[:,target])
 	clf.fit(X, Y)
@@ -103,11 +114,16 @@ def drawTree(classifier, featureNames):
 
 if __name__ == '__main__':
 	dfTrain = prepareDataSet("train.csv")
-	print(dfTrain.head())
-	features = ["Pclass", "Age", "SibSp", "Parch", "Fare", "Rank"]
-	clfTree = createTree(dfTrain, features, "Survived")
+	features = ["Pclass", "Age", "SibSp", "Parch", "Fare", "Rank", "Sex", "Embarked"]
+
+	treeParams = {"max_depth" : 10, "min_samples_leaf" : 10, "min_impurity_split" : 0.175}
+
+	clfTree = createTree(dfTrain, features, "Survived", treeParams)
 	drawTree(clfTree, features)
 	
 	dfTest = prepareDataSet("test.csv")
-	test = clfTree.predict(dfTest)
-	print(clfTree.predict(dfTest))
+	result = clfTree.predict(dfTest.ix[:, dfTest.columns != "PassengerId"])
+
+	predictions = dfTest["PassengerId"].to_frame()
+	predictions["Survived"] = Series(result)
+	submission = predictions.to_csv('submission.csv', header = True, index = False)
