@@ -2,7 +2,7 @@ import numpy
 import matplotlib.pyplot as plt
 from pandas import read_csv, Series, DataFrame, isnull, concat
 from re import search, match
-from scipy import stats
+from scipy import stats, optimize
 from os import system
 from sklearn import tree, metrics
 
@@ -117,21 +117,39 @@ def drawTree(classifier, featureNames):
 if __name__ == '__main__':
 	#dfTrain = prepareDataSet("train.csv")
 	#dfTest = prepareDataSet("test.csv")
+	#treeParams = {"max_depth" : 10, "min_samples_leaf" : 10, "min_impurity_split" : 0.1}
+	target = "Survived"
 
 	data = prepareDataSet("train.csv")
 	dfTrain, dfTest = sampleData(data, 0.33)
 
 	features = ["Pclass", "Age", "SibSp", "Parch", "Fare", "Rank", "Sex", "Embarked"]
 
-	#treeParams = {"max_depth" : 10, "min_samples_leaf" : 10, "min_impurity_split" : 0.1}
-
-	clfTree = createTree(dfTrain, features, "Survived")
-	drawTree(clfTree, features)
+	clfTree = createTree(dfTrain, features, target)
 	
-	result = clfTree.predict(dfTest.ix[:, dfTest.columns.difference(["PassengerId", "Survived"])])
-	score = metrics.accuracy_score(dfTest.loc[:, "Survived"], result)
-	print(score)
+	#drawTree(clfTree, features)
+	
+	#result = clfTree.predict(dfTest.ix[:, dfTest.columns.difference(["PassengerId", "Survived"])])
+	#score = metrics.accuracy_score(dfTest.loc[:, "Survived"], result)
+	#print(score)
 
+	def lossFunction(params = [None, 2, 1e-7]):
+		# tree needs to be initiated here with on-fly argument values
+		# a new tree class needed in order to minize loss
+
+		clfTree.max_depth = params[0] #maxDepth
+		clfTree.min_samples_leaf = params[1] #minSamplesLeaf
+		clfTree.min_impurity_split = params[2] #minImpuritySplit
+
+		result = clfTree.predict(dfTest.ix[:, dfTest.columns.difference(["PassengerId", "Survived"])])
+
+		print(result == resultCopy)
+
+		score = metrics.accuracy_score(dfTest.loc[:, "Survived"], result)
+		return(numpy.asscalar(score))
+
+	print(type(lossFunction()))
+	#print(optimize.minimize(fun = lossFunction, x0 = (10, 2, 0.05), args = ('maxDepth', 'minSamplesLeaf', 'minImpuritySplit'), method = 'Nelder-Mead'))
 	#predictions = dfTest["PassengerId"].to_frame()
 	#predictions["Survived"] = Series(result)	
 	#submission = predictions.to_csv('submission.csv', header = True, index = False)
