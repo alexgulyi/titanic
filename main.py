@@ -1,10 +1,10 @@
 import numpy
 import matplotlib.pyplot as plt
-from pandas import read_csv, Series, DataFrame, isnull
+from pandas import read_csv, Series, DataFrame, isnull, concat
 from re import search, match
 from scipy import stats
 from os import system
-from sklearn import tree
+from sklearn import tree, metrics
 
 def loadData(path):
 	"""Loads a file into dataframe"""
@@ -90,12 +90,14 @@ def prepareDataSet(path):
 	dataFrame.loc[:,"Age"] = dataFrame.loc[:,"Age"].astype(int)
 	return(dataFrame)
 
-def Sample(dataframe, size):
-	"""Splits dataframe randomly on 2 pieces with one sized <size>"""
-	return()
+def sampleData(dataframe, size):
+	"""Splits dataframe randomly on 2 pieces with one sized <size>, 0 <= size <= 1"""
+	df1 = dataframe.sample(frac = size)
+	df2 = concat([dataframe, df1]).drop_duplicates(keep = False)
+	return(df1, df2)
 
 
-def createTree(dataframe, features, target, tune):
+def createTree(dataframe, features, target, tune = {}):
 	X = []
 	iterFeatures = dataframe.loc[:,features].iterrows()
 	for row in iterFeatures:
@@ -113,17 +115,23 @@ def drawTree(classifier, featureNames):
 	system('dot -Tpng tree.dot -o tree.png')
 
 if __name__ == '__main__':
-	dfTrain = prepareDataSet("train.csv")
+	#dfTrain = prepareDataSet("train.csv")
+	#dfTest = prepareDataSet("test.csv")
+
+	data = prepareDataSet("train.csv")
+	dfTrain, dfTest = sampleData(data, 0.33)
+
 	features = ["Pclass", "Age", "SibSp", "Parch", "Fare", "Rank", "Sex", "Embarked"]
 
-	treeParams = {"max_depth" : 10, "min_samples_leaf" : 10, "min_impurity_split" : 0.175}
+	#treeParams = {"max_depth" : 10, "min_samples_leaf" : 10, "min_impurity_split" : 0.1}
 
-	clfTree = createTree(dfTrain, features, "Survived", treeParams)
+	clfTree = createTree(dfTrain, features, "Survived")
 	drawTree(clfTree, features)
 	
-	dfTest = prepareDataSet("test.csv")
-	result = clfTree.predict(dfTest.ix[:, dfTest.columns != "PassengerId"])
+	result = clfTree.predict(dfTest.ix[:, dfTest.columns.difference(["PassengerId", "Survived"])])
+	score = metrics.accuracy_score(dfTest.loc[:, "Survived"], result)
+	print(score)
 
-	predictions = dfTest["PassengerId"].to_frame()
-	predictions["Survived"] = Series(result)
-	submission = predictions.to_csv('submission.csv', header = True, index = False)
+	#predictions = dfTest["PassengerId"].to_frame()
+	#predictions["Survived"] = Series(result)	
+	#submission = predictions.to_csv('submission.csv', header = True, index = False)
