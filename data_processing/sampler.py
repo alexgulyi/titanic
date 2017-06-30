@@ -1,4 +1,4 @@
-from pandas import DataFrame
+from pandas import DataFrame, concat
 
 def sampleData(dataframe, size):
 	"""Splits dataframe randomly on 2 pieces with one sized <size>, 0 <= size <= 1"""
