@@ -1,14 +1,14 @@
 from scipy.optimize import minimize
 
-def lossFunction(tune, tree, testData):
+def lossFunction(minImpurity, tree, testData):
 		clf = tree
-		clf.setTreeParams(tune)
+		clf.setImpurity(minImpurity)
 		clf.fit(testData)
 		return(1. - clf.predict(testData, crossValidate = True)['score'])
 
 def minimizeFunction(function, tree, testData):
 	print(minimize(fun = function,
-					x0 = [5,10,5,0.20],
+					x0 = 0.5,
 					args = (tree, testData,),
-					bounds = ((3,10), (10,50), (5,20), (.01, .20)),
+					# 'Nelder-Mead'
 					method = 'SLSQP'))
