@@ -1,5 +1,2 @@
 *.csv
-data_processing/__init__.py
-data_processing/pycache
-classify/__init__.py
-classify/pycache
+*/__pycache__
