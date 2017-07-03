@@ -1,4 +1,4 @@
-	from os import system
+from os import system
 from pandas import DataFrame, Series, read_csv, isnull
 from re import search, match
 from scipy import stats
