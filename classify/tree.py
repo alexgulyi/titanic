@@ -1,5 +1,8 @@
 from sklearn import tree, metrics
 from os import system
+from scipy import optimize
+
+import matplotlib.pyplot as plt
 
 class clfTree(object):
 	"""Wrapper class for sklearn.tree"""
@@ -10,13 +13,12 @@ class clfTree(object):
 		self.features = featuresNames
 		self.target = targetName
 
-	def setTreeParams(self, params):
-		#for k in params.keys():
-		#	setattr(self.clf, k, params[k])
-		self.clf.max_depth = int(params[0])
-		self.clf.min_samples_split = int(params[1])
-		self.clf.min_samples_leaf = int(params[2])
-		self.clf.min_impurity_split = params[3]
+	"""def setTreeParams(self, params):
+					for k in params.keys():
+						setattr(self.clf, k, params[k])"""
+
+	def setImpurity(self, value):
+		self.clf.min_impurity_split = value
 
 	def fit(self, trainData):
 		"""Fits classifier with trainData"""
@@ -41,3 +43,21 @@ class clfTree(object):
 			score = metrics.accuracy_score(prediction, trueY)
 
 		return({'Y' : prediction, 'score' : score})
+
+	def optimize(self, trainData, testData, domain = (0.001, 0.99)):
+		"""FITS a tree from train data and chooses optimal tree parameters according to testData"""
+		def lossFunction(imp):
+			self.setImpurity(imp)
+			self.fit(trainData)
+			return(1. - self.predict(testData, crossValidate = True)['score'])
+
+		optimum = optimize.minimize_scalar(fun = lossFunction,
+											method = 'bounded',
+											bounds = domain,
+											)
+		if optimum.success:
+			rValue = (optimum.x, optimum.y,)
+		else:
+			rValue = None
+		
+		return(rValue)
