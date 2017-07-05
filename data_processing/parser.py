@@ -2,8 +2,9 @@ from os import system
 from pandas import DataFrame, Series, read_csv, isnull
 from re import search, match
 from scipy import stats
+from numpy import mean
 
-titlesEncoding = {'Col' : 0,
+"""titlesEncoding = {'Col' : 0,
 					'Miss' : 1,
 					'Lady' : 2,
 					'Rev' : 3,
@@ -20,9 +21,9 @@ titlesEncoding = {'Col' : 0,
 					'Jonkheer' : 14,
 					'Mr' : 15,
 					'Mrs' : 16,
-					'Dona' : 17,}
+					'Dona' : 17,}"""
 
-"""titlesEncoding = {'Col' : 2,
+titlesEncoding = {'Col' : 2,
 						'Miss' : 1,
 						'Lady' : 3,
 						'Rev' : 2,
@@ -39,7 +40,7 @@ titlesEncoding = {'Col' : 0,
 						'Jonkheer' : 3,
 						'Mr' : 1,
 						'Mrs' : 1,
-						'Dona' : 3,} """
+						'Dona' : 3,}
 
 sexEncoding = {'female' : 0, 'male' : 1}
 citiesEncoding = {'Q' : 0, 'C' : 1, 'S' : 2}
@@ -81,7 +82,7 @@ def parseColumn(col, encod = {}, fillMode = "mode"):
 				replace = stats.mode(filledFields)[0][0]
 			# otherwise always mean (for yet)
 			else:
-				replace = numpy.mean(col)
+				replace = mean(col)
 			col.loc[isnull(col)] = replace
 		return(col)
 
@@ -107,3 +108,10 @@ def prepareDataSet(path):
 	dataFrame.loc[:,"Fare"] = dataFrame.loc[:,"Fare"].astype(int)
 	dataFrame.loc[:,"Age"] = dataFrame.loc[:,"Age"].astype(int)
 	return(dataFrame)
+
+def packResult(ids, results):
+	dataFrame = DataFrame.from_records(zip(ids, results), columns = ("PassengerId", "Survived",))
+	return(dataFrame)
+
+def toCSV(dataframe, filename):
+	dataframe.to_csv(filename, index = False)
