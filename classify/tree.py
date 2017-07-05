@@ -44,20 +44,20 @@ class clfTree(object):
 
 		return({'Y' : prediction, 'score' : score})
 
-	def optimize(self, trainData, testData, domain = (0.001, 0.5)):
-		"""FITS a tree from train data and chooses optimal tree parameters according to testData"""
+	def fitOptimal(self, trainData, testData, domain = (0.001, 0.5)):
+		"""Fits a tree from train data and chooses optimal tree parameters according to testData"""
 		def lossFunction(imp):
 			self.setImpurity(imp)
 			self.fit(trainData)
 			return(1. - self.predict(testData, crossValidate = True)['score'])
 
-		optimum = optimize.minimize_scalar(fun = lossFunction,
+		solution = optimize.minimize_scalar(fun = lossFunction,
 											method = 'bounded',
 											bounds = domain,
 											)
-		if optimum.success:
-			rValue = (round(optimum.x, 6), round(optimum.fun, 6),)
+		if solution.success:
+			optimum = (round(solution.x, 6), round(solution.fun, 6),)
 		else:
-			rValue = None
+			optimum = None
 		
-		return(rValue)
+		return(optimum)
