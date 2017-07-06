@@ -4,7 +4,7 @@ from re import search, match
 from scipy import stats
 from numpy import mean
 
-"""titlesEncoding = {'Col' : 0,
+titlesEncoding = {'Col' : 0,
 					'Miss' : 1,
 					'Lady' : 2,
 					'Rev' : 3,
@@ -21,9 +21,9 @@ from numpy import mean
 					'Jonkheer' : 14,
 					'Mr' : 15,
 					'Mrs' : 16,
-					'Dona' : 17,}"""
+					'Dona' : 17,}
 
-titlesEncoding = {'Col' : 2,
+"""titlesEncoding = {'Col' : 2,
 						'Miss' : 1,
 						'Lady' : 3,
 						'Rev' : 2,
@@ -40,7 +40,7 @@ titlesEncoding = {'Col' : 2,
 						'Jonkheer' : 3,
 						'Mr' : 1,
 						'Mrs' : 1,
-						'Dona' : 3,}
+						'Dona' : 3,}"""
 
 sexEncoding = {'female' : 0, 'male' : 1}
 citiesEncoding = {'Q' : 0, 'C' : 1, 'S' : 2}
