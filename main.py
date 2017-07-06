@@ -15,7 +15,7 @@ if __name__ == '__main__':
 
 	optGini = opt.getMinGini(clf, data, samplingsNum, samplingsRate)
 
-	clf.setImpurity(optGini)
+	clf.setImpurity(optGini[0])
 	opt.logPredictionMetrics(clf, data, samplingsRate)
 
 	#final prediction
