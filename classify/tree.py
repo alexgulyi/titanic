@@ -2,7 +2,7 @@ from sklearn import tree, metrics
 from os import system
 from scipy import optimize
 
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 
 class clfTree(object):
 	"""Wrapper class for sklearn.tree"""
@@ -12,6 +12,10 @@ class clfTree(object):
 		self.clf = tree.DecisionTreeClassifier(splitter = 'best')
 		self.features = featuresNames
 		self.target = targetName
+
+	"""def setTreeParams(self, params):
+					for k in params.keys():
+						setattr(self.clf, k, params[k])"""
 
 	def setImpurity(self, value):
 		self.clf.min_impurity_split = value
@@ -49,8 +53,7 @@ class clfTree(object):
 
 		solution = optimize.minimize_scalar(fun = lossFunction,
 											method = 'bounded',
-											bounds = domain,
-											)
+											bounds = domain,)
 		if solution.success:
 			optimum = (round(solution.x, 6), round(solution.fun, 6),)
 		else:
