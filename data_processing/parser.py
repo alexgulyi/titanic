@@ -42,8 +42,11 @@ titlesEncoding = {'Col' : 0,
 						'Mrs' : 1,
 						'Dona' : 3,}"""
 
-sexEncoding = {'female' : 0, 'male' : 1}
-citiesEncoding = {'Q' : 0, 'C' : 1, 'S' : 2}
+sexEncoding = {'female' : 0,
+				'male' : 1}
+citiesEncoding = {'Q' : 0,
+					'C' : 1,
+					'S' : 2}
 
 def loadData(path):
 	"""Loads a file into dataframe"""
@@ -58,6 +61,8 @@ def grabAttribute(attr, names):
 		pattern = "(?<=,\s)([^\.])*"
 	elif attr == 'surname':
 		pattern = "^([^,])*"
+	elif attr == 'ticket':
+		pattern = "\d+"
 	else:
 		return(None)
 	
@@ -67,7 +72,7 @@ def grabAttribute(attr, names):
 			match = search(pattern, name)
 			result.append(match.group())
 		except AttributeError:
-			result.append("NONE")
+			result.append(None)
 			continue
 	return(result)
 
@@ -94,19 +99,22 @@ def parseColumn(col, encod = {}, fillMode = "mode"):
 def prepareDataSet(path):
 	dataFrame = loadData(path)
 	
-	titles = Series(grabAttribute('title', dataFrame.loc[:,"Name"]))
-	dataFrame["Rank"] = parseColumn(titles, titlesEncoding)
+	dataFrame["Rank"] = parseColumn(Series(grabAttribute('title', dataFrame.loc[:,"Name"])),
+									titlesEncoding)
 	dataFrame["Sex"] = parseColumn(dataFrame["Sex"], sexEncoding)
 	dataFrame["Embarked"] = parseColumn(dataFrame["Embarked"], citiesEncoding)
 	dataFrame["Age"] = parseColumn(dataFrame["Age"])
 	dataFrame["Fare"] = parseColumn(dataFrame["Fare"],  fillMode = "mean")
+	dataFrame["Ticket"] = parseColumn(Series(grabAttribute('ticket', dataFrame.loc[:, "Ticket"])))
 	
 	# dropping irrelevant columns
-	dataFrame.drop(["Name", "Ticket", "Cabin"], inplace = True, axis = 1)
+	dataFrame.drop(["Name", "Cabin"], inplace = True, axis = 1)
 	
 	# reducing # of distinct values for some parameters
 	dataFrame.loc[:,"Fare"] = dataFrame.loc[:,"Fare"].astype(int)
 	dataFrame.loc[:,"Age"] = dataFrame.loc[:,"Age"].astype(int)
+	dataFrame.loc[:,"Ticket"] = dataFrame.loc[:,"Ticket"].astype(int)
+
 	return(dataFrame)
 
 def packResult(ids, results):
