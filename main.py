@@ -13,10 +13,10 @@ if __name__ == '__main__':
 	testData = prs.prepareDataSet("test.csv")
 	clf = clftree.clfTree(features, target)
 
-	optGini = opt.getMinGini(clf, data, samplingsNum, samplingsRate)
+	optGini = opt.getOptGini(clf, data, samplingsNum, samplingsRate)
 
 	clf.setImpurity(optGini)
-	opt.logPredictionMetrics(clf, data, samplingsRate)
+	opt.validateModel(clf, data, samplingsRate)
 
 	#final prediction
 	clf.fit(data)
