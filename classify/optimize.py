@@ -24,9 +24,10 @@ def validateModel(clf, data, sampleRate, log = True):
 	if log:
 		print("Classification score = {}\n".format(result['score']))
 		print(metrics.classification_report(dfTest.loc[:, 'Survived'], result['Y']))
+		# fix division
 		confMatrix = metrics.confusion_matrix(dfTest.loc[:, 'Survived'], result['Y']) / len(dfTest.index)
-		print(confMatrix)
-		print("True Negative: {}".format(confMatrix[0][0]))
-		print("False Negative: {}".format(confMatrix[1][0]))
-		print("True Positive: {}".format(confMatrix[0][1]))
-		print("False Positive: {}".format(confMatrix[1][1]))
+		decFormat = "0:.2f"
+		print(("True Negative: {" + decFormat + "}").format(confMatrix[0][0]))
+		print(("False Negative: {" + decFormat + "}").format(confMatrix[1][0]))
+		print(("True Positive: {" + decFormat + "}").format(confMatrix[0][1]))
+		print(("False Positive: {" + decFormat + "}").format(confMatrix[1][1]))
