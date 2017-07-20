@@ -16,7 +16,7 @@ if __name__ == '__main__':
 				"Embarked",
 				"Ticket"]
 	samplingsNum = 10
-	samplingsRate = 0.5
+	samplingsRate = 0.4
 
 	data = prs.prepareDataSet("train.csv")
 	testData = prs.prepareDataSet("test.csv")
