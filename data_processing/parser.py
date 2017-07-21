@@ -3,7 +3,7 @@ from pandas import DataFrame, Series, read_csv, isnull
 from re import search, match
 from scipy import stats
 from numpy import mean
-from config import titlesEncoding, sexEncoding, citiesEncoding, target
+from config import titlesEncoding, sexEncoding, citiesEncoding, target, idString
 
 def loadData(path):
 	"""Loads a file into dataframe"""
@@ -65,6 +65,8 @@ def prepareDataSet(path):
 	dataFrame["Age"] = parseColumn(dataFrame["Age"])
 	dataFrame["Fare"] = parseColumn(dataFrame["Fare"],  fillMode = "mean")
 	dataFrame["Ticket"] = parseColumn(Series(grabAttribute('ticket', dataFrame.loc[:, "Ticket"])))
+	dataFrame["Parch"] = parseColumn(dataFrame["Parch"])
+	dataFrame["SibSp"] = parseColumn(dataFrame["SibSp"])
 	
 	# dropping irrelevant columns
 	dataFrame.drop(["Name", "Cabin"], inplace = True, axis = 1)
@@ -77,7 +79,7 @@ def prepareDataSet(path):
 	return(dataFrame)
 
 def packResult(ids, results):
-	dataFrame = DataFrame.from_records(zip(ids, results), columns = (id, target))
+	dataFrame = DataFrame.from_records(zip(ids, results), columns = (idString, target))
 	return(dataFrame)
 
 def toCSV(dataframe, filename):
