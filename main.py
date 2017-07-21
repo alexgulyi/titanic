@@ -2,7 +2,7 @@ import classify.tree as clftree
 import data_processing.parser as prs
 import data_processing.sampler as smp
 import classify.optimize as opt
-from config import target, features, samplingsNum, samplingsRate
+from config import target, features, samplingsNum, samplingsRate, bootstrapSampling
 
 if __name__ == '__main__':
 
@@ -14,7 +14,7 @@ if __name__ == '__main__':
 	optGini = opt.getOptGini(clf, data, samplingsNum, samplingsRate)
 
 	clf.setImpurity(optGini[0])
-	opt.logPredictionMetrics(clf, data, samplingsRate)
+	opt.validateModel(clf, data, samplingsRate)
 
 	#final prediction
 	clf.fit(data)
