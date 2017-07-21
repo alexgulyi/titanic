@@ -1,21 +1,26 @@
 from sklearn import metrics
 import data_processing.sampler as smp
+from numpy import mean
 
-def getOptGini(tree, data, iterNum, sampleRate, bootstrap = False):
+def getOptGini(tree, data, iterNum, sampleRate, minError = True, bootstrap = False, log = True):
 	"""Computes optimal Gini coefficient for a taken tree and data, sampled by a sampleRate."""
 	optima = []
 	
-	for i in range(1, iterNum):
-		print("Sampling #{} on rate = {}:".format(i, sampleRate))
+	for i in range(1, iterNum + 1):
 		# making random train subsamples
 		dfTrain, dfTest = smp.sampleData(data, sampleRate, intersect = bootstrap)
 		optimum = tree.fitOptimal(dfTrain, dfTest)
 		optima.append(optimum)
-		print("min(Gini) = {}\nmin(Error) = {}\n".format(*optimum))
-	opt = min(optima)
-	
-	print("Choosen Gini value: {} deliveres minimal error = {}".format(*opt))
-	
+		if log:
+			print("Sampling #{} (rate={}):".format(i, sampleRate) + " error={}, gini={}".format(*optimum))
+	if minError:
+		opt = min(optima)
+		print("Min error rate = {} is delievered by gini = {}".format(*opt))
+	else:
+		errors = [ x[0] for x in optima ]
+		ginies = [ x[1] for x in optima ]
+		opt = (round(mean(errors),3), round(mean(ginies),3),)
+		print("Average error rate = {} is delievered by gini = {}".format(*opt))
 	return(opt)
 
 def validateModel(clf, data, sampleRate, log = True):
@@ -25,7 +30,8 @@ def validateModel(clf, data, sampleRate, log = True):
 	result = clf.predict(dfTest, crossValidate = True)
 	
 	if log:
-		print("Classification score = {}\n".format(result['score']))
+		print("Estimated score = {}".format(round(result['score'], 3)))
+		print("\nClassification report:")
 		print(metrics.classification_report(dfTest.loc[:, 'Survived'], result['Y']))
 		# fix division
 		confMatrix = metrics.confusion_matrix(dfTest.loc[:, 'Survived'], result['Y'])

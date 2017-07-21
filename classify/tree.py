@@ -44,7 +44,7 @@ class clfTree(object):
 
 		return({'Y' : prediction, 'score' : score})
 
-	def fitOptimal(self, trainData, testData, domain = (0.001, 0.5)):
+	def fitOptimal(self, trainData, testData, domain = (0.000001, 0.5)):
 		"""Fits a tree from train data and chooses optimal tree parameters according to testData"""
 		def lossFunction(imp):
 			self.setImpurity(imp)
@@ -55,7 +55,8 @@ class clfTree(object):
 											method = 'bounded',
 											bounds = domain,)
 		if solution.success:
-			optimum = (round(solution.x, 6), round(solution.fun, 6),)
+			# format (y, x) - inverted point of maximum
+			optimum = (round(solution.fun, 3), round(solution.x, 3),)
 		else:
 			optimum = None
 		
