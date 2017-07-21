@@ -3,50 +3,7 @@ from pandas import DataFrame, Series, read_csv, isnull
 from re import search, match
 from scipy import stats
 from numpy import mean
-
-titlesEncoding = {'Col' : 0,
-					'Miss' : 1,
-					'Lady' : 2,
-					'Rev' : 3,
-					'the Countess' : 4,
-					'Capt' : 5,
-					'Sir' : 6,
-					'Mme' : 7,
-					'Dr' : 8,
-					'Master' : 9,
-					'Don' : 10,
-					'Ms' : 11,
-					'Mlle' : 12,
-					'Major' : 13,
-					'Jonkheer' : 14,
-					'Mr' : 15,
-					'Mrs' : 16,
-					'Dona' : 17,}
-
-"""titlesEncoding = {'Col' : 2,
-						'Miss' : 1,
-						'Lady' : 3,
-						'Rev' : 2,
-						'the Countess' : 3,
-						'Capt' : 2,
-						'Sir' : 3,
-						'Mme' : 3,
-						'Dr' : 2,
-						'Master' : 2,
-						'Don' : 3,
-						'Ms' : 1,
-						'Mlle' : 1,
-						'Major' : 2,
-						'Jonkheer' : 3,
-						'Mr' : 1,
-						'Mrs' : 1,
-						'Dona' : 3,}"""
-
-sexEncoding = {'female' : 0,
-				'male' : 1}
-citiesEncoding = {'Q' : 0,
-					'C' : 1,
-					'S' : 2}
+from config import titlesEncoding, sexEncoding, citiesEncoding, target
 
 def loadData(path):
 	"""Loads a file into dataframe"""
@@ -99,8 +56,10 @@ def parseColumn(col, encod = {}, fillMode = "mode"):
 def prepareDataSet(path):
 	dataFrame = loadData(path)
 	
+	# creating special feature from name
 	dataFrame["Rank"] = parseColumn(Series(grabAttribute('title', dataFrame.loc[:,"Name"])),
 									titlesEncoding)
+	# mining other features
 	dataFrame["Sex"] = parseColumn(dataFrame["Sex"], sexEncoding)
 	dataFrame["Embarked"] = parseColumn(dataFrame["Embarked"], citiesEncoding)
 	dataFrame["Age"] = parseColumn(dataFrame["Age"])
@@ -118,7 +77,7 @@ def prepareDataSet(path):
 	return(dataFrame)
 
 def packResult(ids, results):
-	dataFrame = DataFrame.from_records(zip(ids, results), columns = ("PassengerId", "Survived",))
+	dataFrame = DataFrame.from_records(zip(ids, results), columns = (id, target))
 	return(dataFrame)
 
 def toCSV(dataframe, filename):
