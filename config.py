@@ -1,4 +1,4 @@
-id = "PassengerId"
+idString = "PassengerId"
 target = "Survived"
 features = ["Pclass",
 			"Age",
@@ -9,8 +9,8 @@ features = ["Pclass",
 			"Sex",
 			"Embarked",
 			"Ticket"]
-samplingsNum = 10
-samplingsRate = 0.4
+samplingsNum = 100
+samplingsRate = 0.5
 
 titlesEncoding = {'Col' : 0,
 					'Miss' : 1,

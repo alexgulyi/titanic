@@ -11,7 +11,7 @@ if __name__ == '__main__':
 
 	clf = clftree.clfTree(features, target)
 
-	optGini = opt.getOptGini(clf, data, samplingsNum, samplingsRate)
+	optGini = opt.getOptGini(clf, data, samplingsNum, samplingsRate, minError = False)
 
 	clf.setImpurity(optGini[0])
 	opt.validateModel(clf, data, samplingsRate)
