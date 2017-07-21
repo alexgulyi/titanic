@@ -2,31 +2,19 @@ import classify.tree as clftree
 import data_processing.parser as prs
 import data_processing.sampler as smp
 import classify.optimize as opt
+import config
 
 if __name__ == '__main__':
-	target = "Survived"
-	features = [
-				"Pclass",
-				"Age",
-				"SibSp",
-				"Parch",
-				"Fare",
-				"Rank",
-				"Sex",
-				"Embarked",
-				"Ticket"]
-	samplingsNum = 10
-	samplingsRate = 0.4
 
 	data = prs.prepareDataSet("train.csv")
 	testData = prs.prepareDataSet("test.csv")
 
-	clf = clftree.clfTree(features, target)
+	clf = clftree.clfTree(config.features, config.target)
 
-	optGini = opt.getOptGini(clf, data, samplingsNum, samplingsRate)
+	optGini = opt.getOptGini(clf, data, config.samplingsNum, config.samplingsRate)
 
 	clf.setImpurity(optGini[0])
-	opt.logPredictionMetrics(clf, data, samplingsRate)
+	opt.logPredictionMetrics(clf, data, config.samplingsRate)
 
 	#final prediction
 	clf.fit(data)
