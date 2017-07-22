@@ -14,7 +14,10 @@ if __name__ == '__main__':
 	optGini = opt.getOptGini(clf, data, samplingsNum, samplingsRate, minError = False)
 
 	clf.setImpurity(optGini[0])
-	opt.validateModel(clf, data, samplingsRate)
+	FN, FP = opt.validateModel(clf, data, samplingsRate)
+	# logging error data for analysis
+	prs.toCSV(FN, "FN.csv")
+	prs.toCSV(FP, "FP.csv")
 
 	#final prediction
 	clf.fit(data)
