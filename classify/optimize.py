@@ -28,7 +28,7 @@ def validateModel(clf, data, sampleRate, log = True):
 	dfTrain, dfTest = smp.sampleData(data, sampleRate)
 	clf.fit(dfTrain)
 	result = clf.predict(dfTest, crossValidate = True)
-	
+
 	if log:
 		print("Estimated score = {}".format(round(result['score'], 3)))
 		print("\nClassification report:")
@@ -38,7 +38,11 @@ def validateModel(clf, data, sampleRate, log = True):
 		decFormat = "0:.2f"
 		numNegative = list(result['Y']).count(0)
 		numPositive = list(result['Y']).count(1)
-		print(("True Negative: {" + decFormat + "}").format(confMatrix[0][0] / numNegative))
-		print(("False Negative: {" + decFormat + "}").format(confMatrix[1][0] / numNegative))
-		print(("True Positive: {" + decFormat + "}").format(confMatrix[0][1] / numPositive))
-		print(("False Positive: {" + decFormat + "}").format(confMatrix[1][1] / numPositive))
+		print(("TN: {" + decFormat + "} FP: {" + decFormat + "}").format(confMatrix[0][0] / numNegative, confMatrix[0][1] / numNegative))
+		print(("FN: {" + decFormat + "} TP: {" + decFormat + "}").format(confMatrix[1][0] / numNegative, confMatrix[1][1] / numNegative))
+
+	# return false negative and false positive records
+	dfTest["clfSurvived"] = result['Y']
+	FN = dfTest[(dfTest["Survived"] == 1) & (dfTest["clfSurvived"] == 0)]
+	FP = dfTest[(dfTest["Survived"] == 0) & (dfTest["clfSurvived"] == 1)]
+	return(FN, FP)
